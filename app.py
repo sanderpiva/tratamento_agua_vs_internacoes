@@ -6,13 +6,12 @@ import plotly.figure_factory as ff
 import io
 import re
 import numpy as np
-import statsmodels.api as sm
 
 @st.cache_data
 def fetch_and_clean_data():
-    url_internacoes = 'ibge_dados/internacoes_tabela898.xlsx'
-    url_tratamento = 'ibge_dados/tratamento_tabela1773.xlsx' 
-    url_final = 'ibge_dados/final_tabela.xlsx'
+    url_internacoes = 'ibge_dados/ret_internacoes_tabela898.xlsx'
+    url_tratamento = 'ibge_dados/ret_tratamento_tabela1773.xlsx' 
+    url_final = 'ibge_dados/df_final.xlsx'
     
     try:
         d_frame_internacoes = pd.read_excel(url_internacoes)
@@ -28,50 +27,7 @@ def fetch_and_clean_data():
 df_internacoes, df_tratamento, df_final = fetch_and_clean_data()
 
 #
-def run_macro_model(df, target_cols, X_cols):
-    """
-    Roda a Regressão OLS de forma robusta, aceitando uma lista dinâmica de variáveis preditoras (X_cols).
-    """
-    if df.empty:
-        return {'Erro Geral': 'DataFrame final está vazio. Não é possível rodar o modelo.'}
-    
-    required_macro_cols = X_cols
-    required_cols = required_macro_cols + target_cols
-    
-    missing_cols = [col for col in required_cols if col not in df.columns]
-    
-    if missing_cols:
-        error_message = f"""
-        Erro: O modelo OLS não pode ser executado com as variáveis {X_cols}.
-        
-        As seguintes colunas estão faltando (Verifique a URL do CSV e o nome exato): 
-        {", ".join(missing_cols)}
-        
-        Colunas disponíveis no DataFrame:
-        {df.columns.tolist()}
-        """
-        return {'KeyError Isolado - Dados Faltando': error_message}
-   
-    df_cleaned = df.dropna(subset=required_cols)
-    
-    X = df_cleaned[required_macro_cols]
-    X = sm.add_constant(X) 
-    
-    results = {}
-    
-    for y_var in target_cols:
-        Y = df_cleaned[y_var]
-        try:
-            model = sm.OLS(Y, X, missing='drop').fit()
-            results[y_var] = model.summary().as_text()
-            
-        except ValueError as e:
-            results[y_var] = f"Erro ao rodar o modelo OLS para {y_var}: {e}"
-            
-    return results
-
-#
-# --- 2. BARRA LATERAL (Seu Código Adaptado) ---
+# --- BARRA LATERAL ---
 st.sidebar.header('Configurações', divider='blue')
 
 data_expander = st.sidebar.expander(label="# **Dados Tabulares**", icon=":material/table:")
@@ -79,14 +35,11 @@ with data_expander:
     # O form é crucial para agrupar as ações de filtro e só atualizar a tela quando o botão for pressionado
     with st.form("settings_form", clear_on_submit=False):
         st.markdown("**Selecione as Visualizações**")
-        explain_data = st.checkbox("Significado dos Dados", key="explain")
-        data_in_table_internaçoes = st.checkbox("Exibir Tabela de Dados Internações", key="table_internacoes")
+        data_in_table_internacoes = st.checkbox("Exibir Tabela de Dados Internações", key="table_internacoes")
         data_in_table_tratamento = st.checkbox("Exibir Tabela de Dados Tratamento", key="table_tratamento")
         data_in_table_final = st.checkbox("Exibir Tabela de Dados Final (Modelo)", key="table_final")
-        #data_info = st.checkbox("Informações dataframe final", key="info")
-        #data_described = st.checkbox("Resumir dados dataframe final (Describe)", key="describe")
-        #model_selic_cambio_cds = st.checkbox("Modelo Selic + Câmbio + CDS", key="model_sc_cds")
-        #model_cambio_cds = st.checkbox("Modelo Câmbio + CDS", key="model_c_cds")
+        data_info = st.checkbox("Informações dataframe final", key="info")
+        data_described = st.checkbox("Resumir dados dataframe final (Describe)", key="describe")
         
         # O botão de submissão é necessário para que as checagens acima sejam processadas
         settings_form_submitted = st.form_submit_button("Carregar")
@@ -99,58 +52,32 @@ with graph_expander:
     # Formulário dos gráficos
     with st.form("graphs_form", clear_on_submit=False):
         
-        grap_log_return_cambio_cds = st.checkbox("Gráficos de Série Temporal do Retorno logaritmo da Taxa de Cambio e Risco Brasil - CDS")
-        grap_log_return_stock_prices = st.checkbox("Gráficos de Série Temporal do Retorno logaritmo dos Preços das Ações")
-        corr_variables = st.checkbox("Correlação Variáveis Independentes vs Variáveis Dependentes")
+        grap_outliers = st.checkbox("Identificando outliers")
+        grap_todas_regioes_com_outliers = st.checkbox("Saldo Sanitário (ISP) vs Nº Internações")
+        #grap_todas_regioes_sem_outliers = st.checkbox("Saldo Sanitário (ISP) vs Nº Internações (Sem outliers)")
         
         graphs_form_submitted = st.form_submit_button("Gerar")
 
 # === Página Principal ===
-st.header('Modelagem Macroeconômica de Ativos', divider='blue')
-
-# Um markdown de múltiplas linhas
-data_meaning = '''
-
-- `Variável`: Significado
-
-- `Data`: Data de referencia que relaciona os dados (07 out 2020 - 01 out 2025)
-- `Taxa Selic a.a.`: Taxa Selic em porcentual ao ano
-- `Taxa Cambio u.m.c./US$`: Taxa de câmbio unidade monetária corrente/US$
-- `RETORNO_LOG_CAMBIO`: Calculo retorno logaritmo para a taxa Câmbio
-- `CDS`: Risco Brasil - CDS
-- `RETORNO_LOG_CDS`: Calculo retorno logaritmo para a Risco Brasil - CDS
-- `Itau`: Preco da ação (fechamento) do Itaú
-- `RETORNO_LOG_Itau`: Calculo retorno logaritmo para o preço da ação da Itau
-- `Petrobras`: Preco da ação (fechamento) da Petrobras
-- `RETORNO_LOG_Petrobras`: Calculo retorno logaritmo para o preço da ação da Petrobras
-- `Vale do Rio Doce`: Preço da ação (fechamento) da Vale Rio Doce
-- `RETORNO_LOG_Vale Rio Doce`: Calculo retorno logaritmo para o preço da ação da Vale
-'''
-
-# Variáveis dependentes (Y) para as 3 ações
-
-acoes_retorno = ['RETORNO_LOG_Itau', 'RETORNO_LOG_Petrobras', 'RETORNO_LOG_Vale Rio Doce'] 
-
-# Variáveis preditoras (X)
-X_macro_sc_cds = ['Taxa Selic - a.a.', 'RETORNO_LOG_CAMBIO', 'RETORNO_LOG_CDS'] # Modelo 1
-X_macro_c_cds = ['RETORNO_LOG_CAMBIO', 'RETORNO_LOG_CDS'] # Modelo Final
+st.header('Tratamento de Água e número internações hospitalares', divider='blue')
 
 # Ao submeter o form de dados tabulares
 if settings_form_submitted:
-    if explain_data:
-        st.subheader("Dicionário dos Dados", divider="gray")
-        st.markdown(data_meaning)
     
-    if data_in_table_parcial:
-        st.subheader("Tabela de Dados Parcial", divider="gray")
-        st.write(df_parcial)
+    if data_in_table_internacoes:
+        st.subheader("Tabela de Dados Internacoes", divider="gray")
+        st.write(df_internacoes)
     
+    if data_in_table_tratamento:
+        st.subheader("Tabela de Dados Internacoes", divider="gray")
+        st.write(df_internacoes)
+
     if data_in_table_final:
-        st.subheader("Tabela de Dados Final (Modelo)", divider="gray")
+        st.subheader("Tabela de Dados Final", divider="gray")
         st.write(df_final)
     
     if data_info:
-        st.subheader("Informações sobre os dados: dataframe final (Modelo)", divider="gray")
+        st.subheader("Informações sobre os dados: dataframe final", divider="gray")
         try:
             df_final['Data'] = pd.to_datetime(df_final['Data'], errors='coerce')
         except KeyError:
@@ -166,48 +93,6 @@ if settings_form_submitted:
         st.subheader("Resumo dos dados: dataframe final (Modelo)", divider="gray")
         st.write(df_final.describe())
     
-    if model_selic_cambio_cds:
-        st.subheader("Modelo Selic + Câmbio + CDS", divider="gray") 
-    
-        model_results = run_macro_model(df_final.copy(), acoes_retorno, X_macro_sc_cds)
-        
-        for acao, summary_text in model_results.items():
-            st.markdown(f"### Resultados da Regressão para: **{acao}**")
-            st.code(summary_text, language='text')
-
-            r_sq_match = re.search(r'R-squared:\s+(\d\.\d+)', summary_text)
-            
-            if r_sq_match:
-                r_squared = float(r_sq_match.group(1))
-                st.info(f"O **$R^2$ (Coeficiente de Determinação)** para **{acao}** é de **{r_squared:.4f}**.")
-                st.caption("Este valor indica a porcentagem da variação no Retorno da Ação que é explicada pelas variáveis macroeconômicas (Selic, Câmbio e CDS).")
-        
-        st.info(f"**IMPORTANTE:**")
-        st.write("Esse modelo foi descartado, pois a regra p < 0.05 não é atendida em todos os casos. Exemplo: Para a Vale do Rio Doce, a Taxa Selic a.a. teve p > 0.05")
-
-    if model_cambio_cds:
-        st.subheader("Modelo Câmbio + CDS (Adotado)", divider="gray")
-        
-        model_results = run_macro_model(df_final.copy(), acoes_retorno, X_macro_c_cds)
-    
-        for acao, summary_text in model_results.items():
-            st.markdown(f"### Resultados da Regressão para: **{acao}**")
-            st.code(summary_text, language='text')
-
-            
-            r_sq_match = re.search(r'R-squared:\s+(\d\.\d+)', summary_text)
-            
-            if r_sq_match:
-                r_squared = float(r_sq_match.group(1))
-                st.info(f"O **$R^2$ (Coeficiente de Determinação)** para **{acao}** é de **{r_squared:.4f}**.")
-                st.caption("Este valor indica a porcentagem da variação no Retorno da Ação que é explicada pelas variáveis macroeconômicas (Câmbio e CDS).")
-        
-        
-        st.info(f"**VANTAGENS do Modelo (Câmbio + CDS) adotado:**")
-        st.write("- Oferece o melhor equilíbrio entre simplicidade e capacidade de explicar a variação nos retornos das ações;")
-        st.write("- Ambas as variáveis, (RETORNO_LOG_CAMBIO e RETORNO_LOG_CDS são estatisticamente significativas (p < 0.05) para os três ativos;")
-        st.write("- Multicolinearidade aceitável: A multicolinearidade (Cond. No.  ≈121 ) entre Câmbio e CDS indica que eles se movem juntos, dificultando a interpretação isolada do efeito de cada um, porém não a capacidade preditiva do modelo como um todo;")
-        st.write("- As tentativas com a combinação Selic + CDS, ou ainda, apenas o CDS não trouxeram poder explicativo relevante.")
 #
 
 # Ao submeter o form de gráficos
@@ -215,8 +100,8 @@ if settings_form_submitted:
 if graphs_form_submitted:
     
     
-    if grap_log_return_cambio_cds:
-        st.subheader("Gráficos de Série Temporal do Retorno logaritmo Taxa Cambio e Risco Brasil - CDS", divider="gray")
+    if  grap_outliers:
+        st.subheader("Identificando outliers", divider="gray")
 
         df_usado = df_final.copy() 
 
@@ -244,8 +129,8 @@ if graphs_form_submitted:
         st.pyplot(fig)
     
     
-    if grap_log_return_stock_prices:
-        st.subheader("Gráficos de Série Temporal do Retorno logaritmo dos Preços das Ações (Itaú, Petrobras, Vale Rio Doce)", divider="gray")
+    if grap_todas_regioes_com_outliers:
+        st.subheader("Saldo Sanitário (ISP) vs Nº Internações", divider="gray")
 
         df_usado = df_final.copy() 
 
@@ -272,32 +157,6 @@ if graphs_form_submitted:
         plt.tight_layout()
 
         st.pyplot(fig)
+    
+    #if  grap_todas_regioes_sem_outliers:
 
-if graphs_form_submitted:
-    if corr_variables:
-        st.subheader("Correlação Variáveis Independentes vs Variáveis Dependentes", divider="gray")
-        st.info(f"**IMPORTANTE:**")
-        st.write("Para o modelo preditivo adotado (Câmbio + CDS):")
-        st.write("Variáveis independentes: Retorno Logaritmo Cambio e Retorno Logaritmo CDS")
-        st.write("Variáveis dependentes: Retorno Logaritmo Itau, Retorno Logaritmo Petrobras, Retorno Logaritmo Vale Rio Doce (Retorno Logaritmo das ações das empresas)")
-        st.info(f"**CORRELAÇÃO:**")
-
-        correlation_matrix = df_final[['RETORNO_LOG_CAMBIO', 'RETORNO_LOG_CDS', 'RETORNO_LOG_Itau', 'RETORNO_LOG_Petrobras', 'RETORNO_LOG_Vale Rio Doce']].corr()
-        
-        fig, ax = plt.subplots(figsize=(12, 10))
-
-        sns.heatmap(
-            correlation_matrix, 
-            annot=True, 
-            cmap='coolwarm', 
-            fmt=".2f", 
-            linewidths=.5, 
-            ax=ax 
-        )
-        
-        ax.set_title('Mapa de Calor da Correlação das Variáveis Independentes x Variáveis Dependentes', fontsize=16)
-        
-        st.pyplot(fig)
-        st.info(f"**COMPORTAMENTO?**")
-        st.write("A medida que aumento o valor do cambio e/ou do risco CDS, o retorno logaritmo do preço das ações das empresas Itau, Petrobrás e Vale do Rio Doce tendem a diminuir.")
-        
