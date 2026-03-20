@@ -4,7 +4,6 @@ import seaborn as sns
 import streamlit as st
 import plotly.figure_factory as ff
 import io
-import re
 from sklearn.ensemble import IsolationForest
 import numpy as np
 
@@ -54,16 +53,16 @@ with graph_expander:
     with st.form("graphs_form", clear_on_submit=False):
         
         grap_outliers = st.checkbox("Identificando outliers")
-        grap_todas_regioes_com_outliers = st.checkbox("Saldo Sanitário (ISP) vs Nº Internações")
-        grap_todas_regioes_sem_outliers = st.checkbox("Saldo Sanitário (ISP) vs Nº Internações (Sem outliers)")
-        
+        grap_all_areas = st.checkbox("Indice Saneamento Positivo (ISP) vs Nº Internações")
+        grap_all_areas_less_outliers = st.checkbox("Indice Saneamento Positivo (ISP) vs Nº Internações (Sem outliers)")
+        conclusion = st.checkbox("Conclusão")
         graphs_form_submitted = st.form_submit_button("Gerar")
 
 # === Página Principal ===
-st.header('Tratamento de Água e número internações hospitalares', divider='blue')
+st.header('Tratamento de Água vs Nº Internações Hospitalares', divider='blue')
 
-def processa(frame):
-        st.subheader("ISP vs. Nº Internações", divider="gray")
+def process_graph(frame):
+        st.subheader("Indice Saneamento Positivo (ISP) vs. Nº Internações", divider="gray")
 
         fig, ax = plt.subplots(figsize=(14, 9))
         sns.set_style("whitegrid")
@@ -90,7 +89,7 @@ def processa(frame):
                 fontweight='bold'
             )
 
-        ax.set_title('Saldo Sanitário (ISP) vs. Nº Internações', fontsize=18, pad=25)
+        ax.set_title('Indice Saneamento Positivo (ISP) vs. Nº Internações', fontsize=18, pad=25)
         ax.set_xlabel('Índice de Saneamento Positivo (ISP)', fontsize=13)
         ax.set_ylabel('Internações Totais', fontsize=13)
 
@@ -177,12 +176,12 @@ if graphs_form_submitted:
             st.warning(f"**Estados Outliers:** {', '.join(outliers['UF'].unique())}")
 
     
-    if grap_todas_regioes_com_outliers:
-
-        processa(df_final)
+    if grap_all_areas:
+        
+        process_graph(df_final)
     
     
-    if grap_todas_regioes_sem_outliers:
+    if grap_all_areas_less_outliers:
 
         iso_forest = IsolationForest(contamination=0.11, random_state=42)
 
@@ -192,9 +191,52 @@ if graphs_form_submitted:
         df_padrao = df_final[df_final['Outlier_IF'] == 1]
         df_critico = df_final[df_final['Outlier_IF'] == -1]
         
-        processa(df_padrao)
+        process_graph(df_padrao)
+    #
 
-#
+    if conclusion:
+
+        if grap_outliers and grap_all_areas and grap_all_areas_less_outliers:
+            # Título da seção de análise
+            st.subheader("Análise e Conclusões dos Dados", divider="blue")
+
+            # Texto introdutório com destaque
+            st.info("""
+            **Observação Geral:** Mesmo retirando os outliers, nota-se que o comportamento geral se manteve. 
+            Todavia, a grande maioria dos casos em que o **ISP foi positivo**, o risco de internação foi **baixo**, salvo exceções.
+            """)
+
+            # Destaque para os casos específicos usando colunas
+            st.write("### Casos de Estudo: AM e CE")
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.error("**Amazonas (AM)**")
+                st.write("""
+                * **Perfil:** ISP Negativo / Risco Médio.
+                * **Análise:** Embora o ISP seja negativo, o número de internações em relação aos outros estados foi menor, desafiando a tendência geral.
+                """)
+
+            with col2:
+                st.success("**Ceará (CE)**")
+                st.write("""
+                * **Perfil:** ISP Positivo / Risco Baixo.
+                * **Análise:** Apresenta um número de internações alto, apesar do saldo de tratamento positivo.
+                """)
+
+            # Conclusão final em um bloco de destaque
+            st.markdown("---")
+            st.markdown("""
+            ### **Conclusão Final**
+            O tratamento de água é fundamental para um saneamento básico de qualidade e influência diretamente o número de internações. 
+            Contudo, o saneamento abrange diversas áreas e não é o único fator na ocorrência desse fenômeno.
+
+            Ainda assim, os dados provaram uma **ligação inversamente proporcional** em grande parte do país. 
+            Estados como **SP, RJ, DF, PE, RS, PR, AL, GO, MT, ES, SE e TO** confirmam essa tese, mantendo um ISP positivo com menos de **2.000 internações totais**.
+            """)
+        else:
+            st.write("Por favor, consulte previamente todos os graficos!")
+#   
         
             
 
