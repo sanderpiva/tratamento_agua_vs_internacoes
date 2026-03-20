@@ -65,12 +65,12 @@ st.header('Tratamento de Água e número internações hospitalares', divider='b
 if settings_form_submitted:
     
     if data_in_table_internacoes:
-        st.subheader("Tabela de Dados Internacoes", divider="gray")
+        st.subheader("Tabela de Dados Internações", divider="gray")
         st.write(df_internacoes)
     
     if data_in_table_tratamento:
-        st.subheader("Tabela de Dados Internacoes", divider="gray")
-        st.write(df_internacoes)
+        st.subheader("Tabela de Dados Tratamento de Água", divider="gray")
+        st.write(df_tratamento)
 
     if data_in_table_final:
         st.subheader("Tabela de Dados Final", divider="gray")
