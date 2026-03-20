@@ -5,6 +5,7 @@ import streamlit as st
 import plotly.figure_factory as ff
 import io
 import re
+from sklearn.ensemble import IsolationForest
 import numpy as np
 
 @st.cache_data
@@ -54,12 +55,63 @@ with graph_expander:
         
         grap_outliers = st.checkbox("Identificando outliers")
         grap_todas_regioes_com_outliers = st.checkbox("Saldo Sanitário (ISP) vs Nº Internações")
-        #grap_todas_regioes_sem_outliers = st.checkbox("Saldo Sanitário (ISP) vs Nº Internações (Sem outliers)")
+        grap_todas_regioes_sem_outliers = st.checkbox("Saldo Sanitário (ISP) vs Nº Internações (Sem outliers)")
         
         graphs_form_submitted = st.form_submit_button("Gerar")
 
 # === Página Principal ===
 st.header('Tratamento de Água e número internações hospitalares', divider='blue')
+
+def processa(frame):
+        st.subheader("ISP vs. Nº Internações", divider="gray")
+
+        fig, ax = plt.subplots(figsize=(14, 9))
+        sns.set_style("whitegrid")
+
+        sns.scatterplot(
+            data=frame,
+            x='ISP',
+            y='Internacao_Total',
+            hue='Perfil_Sanitario',
+            hue_order=['Risco Baixo', 'Risco Médio', 'Risco Alto'],
+            palette={'Risco Baixo': 'green', 'Risco Médio': 'orange', 'Risco Alto': 'red'},
+            s=200,
+            edgecolor='black',
+            alpha=0.7,
+            ax=ax
+        )
+
+        for i in range(frame.shape[0]):
+            ax.text(
+                frame['ISP'].iloc[i] + 0.05,
+                frame['Internacao_Total'].iloc[i],
+                frame['UF'].iloc[i],
+                fontsize=9,
+                fontweight='bold'
+            )
+
+        ax.set_title('Saldo Sanitário (ISP) vs. Nº Internações', fontsize=18, pad=25)
+        ax.set_xlabel('Índice de Saneamento Positivo (ISP)', fontsize=13)
+        ax.set_ylabel('Internações Totais', fontsize=13)
+
+        ax.axvline(0, color='black', linestyle='--', alpha=0.5)
+        y_max = ax.get_ylim()[1]
+        ax.text(0.2, y_max * 0.9, 'Prevalência de Tratamento', color='green', fontweight='bold')
+        ax.text(-1.5, y_max * 0.9, 'Prevalência de Sem Tratamento', color='red', fontweight='bold')
+
+        plt.tight_layout()
+
+        st.pyplot(fig)
+
+        st.write("### Resumo Estatístico por Perfil Sanitário")
+
+        resumo = frame.groupby('Perfil_Sanitario').agg({
+            'ISP': 'mean',
+            'Internacao_Total': 'mean'
+        }).sort_values('ISP', ascending=False)
+
+        st.table(resumo)
+
 
 # Ao submeter o form de dados tabulares
 if settings_form_submitted:
@@ -78,11 +130,7 @@ if settings_form_submitted:
     
     if data_info:
         st.subheader("Informações sobre os dados: dataframe final", divider="gray")
-        try:
-            df_final['Data'] = pd.to_datetime(df_final['Data'], errors='coerce')
-        except KeyError:
-            st.warning("Aviso: A coluna 'Data' não foi encontrada no DataFrame. Verifique o nome da coluna.")
-
+        
         buffer_captura = io.StringIO()
         
         df_final.info(buf=buffer_captura)
@@ -105,58 +153,48 @@ if graphs_form_submitted:
 
         df_usado = df_final.copy() 
 
-        df_usado['Data'] = pd.to_datetime(df_usado['Data'], errors='coerce')
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.set_theme(style="whitegrid")
 
-        acoes_retornos = ['RETORNO_LOG_CAMBIO', 'RETORNO_LOG_CDS']
+        sns.boxplot(x=df_usado['Internacao_Total'], color='#ff9999', fliersize=8, ax=ax)
+        sns.stripplot(x=df_usado['Internacao_Total'], color='#333', alpha=0.5, ax=ax)
 
-        fig, axes = plt.subplots(2, 1, figsize=(15, 18), sharex=False) 
-
-        for i, acao in enumerate(acoes_retornos):
-        
-            sns.lineplot(ax=axes[i], x='Data', y=acao, data=df_usado, color=plt.cm.magma(i/len(acoes_retornos)))
-            
-            axes[i].set_title(f'Série Temporal do Retorno Logarítmico: {acao}', fontsize=16)
-            axes[i].set_ylabel('Retorno Logarítmico', fontsize=12)
-            axes[i].tick_params(axis='y', labelsize=10)
-            axes[i].grid(True, linestyle='--', alpha=0.7)
-            
-            axes[i].tick_params(axis='x', rotation=45, labelsize=10)
-            
-            axes[i].set_xlabel('Data', fontsize=12) 
+        ax.set_title('Distribuição e Outliers de Internações por UF', fontsize=14)
+        ax.set_xlabel('Número de Internações', fontsize=12)
+        ax.grid(True, linestyle='--', alpha=0.7)
 
         plt.tight_layout()
-
         st.pyplot(fig)
-    
+
+        Q1 = df_usado['Internacao_Total'].quantile(0.25)
+        Q3 = df_usado['Internacao_Total'].quantile(0.75)
+        IQR = Q3 - Q1
+        limite_superior = Q3 + 1.5 * IQR
+
+        outliers = df_usado[df_usado['Internacao_Total'] > limite_superior]
+
+        if not outliers.empty:
+            st.warning(f"**Estados Outliers:** {', '.join(outliers['UF'].unique())}")
+
     
     if grap_todas_regioes_com_outliers:
-        st.subheader("Saldo Sanitário (ISP) vs Nº Internações", divider="gray")
 
-        df_usado = df_final.copy() 
-
-        df_usado['Data'] = pd.to_datetime(df_usado['Data'], errors='coerce')
-
-        acoes_retornos = ['RETORNO_LOG_Itau', 'RETORNO_LOG_Petrobras', 'RETORNO_LOG_Vale Rio Doce']
-
-        fig, axes = plt.subplots(3, 1, figsize=(15, 18), sharex=False) 
-
-        for i, acao in enumerate(acoes_retornos):
-        
-            sns.lineplot(ax=axes[i], x='Data', y=acao, data=df_usado, color=plt.cm.viridis(i/len(acoes_retornos)))
-            
-            axes[i].set_title(f'Série Temporal do Retorno Logarítmico: {acao}', fontsize=16)
-            axes[i].set_ylabel('Retorno Logarítmico', fontsize=12)
-            axes[i].tick_params(axis='y', labelsize=10)
-            axes[i].grid(True, linestyle='--', alpha=0.7)
-            
-            axes[i].tick_params(axis='x', rotation=45, labelsize=10)
-            
-            axes[i].set_xlabel('Data', fontsize=12) 
-
-
-        plt.tight_layout()
-
-        st.pyplot(fig)
+        processa(df_final)
     
-    #if  grap_todas_regioes_sem_outliers:
+    
+    if grap_todas_regioes_sem_outliers:
+
+        iso_forest = IsolationForest(contamination=0.11, random_state=42)
+
+        # Treinando o modelo
+        df_final['Outlier_IF'] = iso_forest.fit_predict(df_final[['ISP', 'Internacao_Total']])
+
+        df_padrao = df_final[df_final['Outlier_IF'] == 1]
+        df_critico = df_final[df_final['Outlier_IF'] == -1]
+        
+        processa(df_padrao)
+
+#
+        
+            
 
