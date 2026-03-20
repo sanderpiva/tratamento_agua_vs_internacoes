@@ -10,20 +10,22 @@ import statsmodels.api as sm
 
 @st.cache_data
 def fetch_and_clean_data():
-    url_parcial = 'https://raw.githubusercontent.com/sanderpiva/fatores_macro_docs/main/resultados_modelo_json/parcial_merged_dfs_cds.csv'
-    url_final = 'https://raw.githubusercontent.com/sanderpiva/fatores_macro_docs/main/resultados_modelo_json/df_final_model.csv' 
+    url_internacoes = 'ibge_dados/internacoes_tabela898.xlsx'
+    url_tratamento = 'ibge_dados/tratamento_tabela1773.xlsx' 
+    url_final = 'ibge_dados/final_tabela.xlsx'
     
     try:
-        d_frame_parcial = pd.read_csv(url_parcial)
-        d_frame_final = pd.read_csv(url_final)
+        d_frame_internacoes = pd.read_excel(url_internacoes)
+        d_frame_tratamento = pd.read_excel(url_tratamento)
+        d_frame_final = pd.read_excel(url_final)   
         
-        return d_frame_parcial, d_frame_final
+        return d_frame_internacoes, d_frame_tratamento, d_frame_final
         
     except Exception as e:
         st.error(f"Erro ao carregar os dados. Verifique a URL ou o formato: {e}")
         return pd.DataFrame(), pd.DataFrame()
 
-df_parcial, df_final = fetch_and_clean_data()
+df_internacoes, df_tratamento, df_final = fetch_and_clean_data()
 
 #
 def run_macro_model(df, target_cols, X_cols):
@@ -78,12 +80,13 @@ with data_expander:
     with st.form("settings_form", clear_on_submit=False):
         st.markdown("**Selecione as Visualizações**")
         explain_data = st.checkbox("Significado dos Dados", key="explain")
-        data_in_table_parcial = st.checkbox("Exibir Tabela de Dados Parcial", key="table_parcial")
-        data_in_table_final = st.checkbox("Exibir Tabela de Dados final", key="table_final")
-        data_info = st.checkbox("Informações dataframe final", key="info")
-        data_described = st.checkbox("Resumir dados dataframe final (Describe)", key="describe")
-        model_selic_cambio_cds = st.checkbox("Modelo Selic + Câmbio + CDS", key="model_sc_cds")
-        model_cambio_cds = st.checkbox("Modelo Câmbio + CDS", key="model_c_cds")
+        data_in_table_internaçoes = st.checkbox("Exibir Tabela de Dados Internações", key="table_internacoes")
+        data_in_table_tratamento = st.checkbox("Exibir Tabela de Dados Tratamento", key="table_tratamento")
+        data_in_table_final = st.checkbox("Exibir Tabela de Dados Final (Modelo)", key="table_final")
+        #data_info = st.checkbox("Informações dataframe final", key="info")
+        #data_described = st.checkbox("Resumir dados dataframe final (Describe)", key="describe")
+        #model_selic_cambio_cds = st.checkbox("Modelo Selic + Câmbio + CDS", key="model_sc_cds")
+        #model_cambio_cds = st.checkbox("Modelo Câmbio + CDS", key="model_c_cds")
         
         # O botão de submissão é necessário para que as checagens acima sejam processadas
         settings_form_submitted = st.form_submit_button("Carregar")
