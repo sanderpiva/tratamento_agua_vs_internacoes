@@ -30,7 +30,7 @@ A partir dos dados observados:
 ## 📂 Como Executar
 
 No Google Colab
-1. Acompanhe todo processo de 'data science' incluindo a junção dos dataframes e análises executando o notebook fornecido 'projeto_final.py'
+1. Acompanhe todo processo de 'data science' incluindo a junção dos dataframes e análises executando o notebook fornecido 'projeto_final'
 
 No CodeSpace (Streamlit)
 1. Clone o repositório.
