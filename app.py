@@ -47,7 +47,7 @@ with data_expander:
 #
 
 graph_expander = st.sidebar.expander("# **Gráficos**", icon=":material/monitoring:")
-# st.sidebar.subheader('Gráficos')
+
 with graph_expander:
     # Formulário dos gráficos
     with st.form("graphs_form", clear_on_submit=False):
