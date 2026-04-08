@@ -25,23 +25,23 @@ O dashboard foi desenvolvido para proporcionar uma experiência interativa, perm
 
 | **Página Inicial** |
 
-![1](https://github.com/user-attachments/assets/2af8f8f9-c455-4666-8ccb-dd3cac906ca6)
+<img src="img/1.jpg" alt="foto 1" width="100%">
  
 | **Identificação de estados atípicos (Boxplot)** |
 
-![2](https://github.com/user-attachments/assets/437ccb7d-43e1-481f-ad42-1ece1d68910f)
- 
+<img src="img/2.jpg" alt="foto 2" width="100%">
+
 | **Indíce de Sanemanto Positivo (ISP) vs Nº Internações (Com outliers)** 
 
-![3](https://github.com/user-attachments/assets/2d21e279-c0d9-4ed7-9111-54b3a5b77554)
+<img src="img/3.jpg" alt="foto 3" width="100%">
 
 | **Indíce de Sanemanto Positivo (ISP) vs Nº Internações (Sem outliers)** |
 
-![4](https://github.com/user-attachments/assets/a7e9a790-2a5a-4f63-af52-0ddf8568bdc3)
+<img src="img/4.jpg" alt="foto 4" width="100%">
 
 | **Análise e conclusão** |
 
-![5](https://github.com/user-attachments/assets/473dc110-18c3-44af-835a-0dfb21f2e355)
+<img src="img/5.jpg" alt="Página Inicial do Dashboard" width="100%">
 
 ---
 
