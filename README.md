@@ -19,6 +19,32 @@ O projeto processa dados brutos do IBGE, realiza a limpeza de caracteres especí
 3. **Normalização e Clusterização**: Aplicação de escala nos dados para agrupar estados com comportamentos similares de saneamento e internação.
 4. **Análise Comparativa**: Estudo detalhado de discrepâncias regionais e *outliers*.
 
+## 🖥️ Visualização da Interface (Streamlit)
+
+O dashboard foi desenvolvido para proporcionar uma experiência interativa, permitindo que o usuário navegue entre os dados brutos e as análises estatísticas avançadas.
+
+| **Página Inicial** |
+
+![1](https://github.com/user-attachments/assets/2af8f8f9-c455-4666-8ccb-dd3cac906ca6)
+ 
+| **Identificação de estados atípicos (Boxplot)** |
+
+![2](https://github.com/user-attachments/assets/437ccb7d-43e1-481f-ad42-1ece1d68910f)
+ 
+| **Indíce de Sanemanto Positivo (ISP) vs Nº Internações (Com outliers)** 
+
+![3](https://github.com/user-attachments/assets/2d21e279-c0d9-4ed7-9111-54b3a5b77554)
+
+| **Indíce de Sanemanto Positivo (ISP) vs Nº Internações (Sem outliers)** |
+
+![4](https://github.com/user-attachments/assets/a7e9a790-2a5a-4f63-af52-0ddf8568bdc3)
+
+| **Análise e conclusão** |
+
+![5](https://github.com/user-attachments/assets/473dc110-18c3-44af-835a-0dfb21f2e355)
+
+---
+
 ## 📈 Conclusões da Análise
 A partir dos dados observados:
 * **Correlação Inversamente Proporcional**: Estados como **SP, RJ, DF, PE, RS e PR** apresentaram um Índice de Saneamento Positivo (ISP) correlacionado a um número baixo de internações (menos de 2.000 casos totais).
