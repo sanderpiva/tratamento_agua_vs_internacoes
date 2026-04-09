@@ -19,6 +19,32 @@ O projeto processa dados brutos do IBGE, realiza a limpeza de caracteres especí
 3. **Normalização e Clusterização**: Aplicação de escala nos dados para agrupar estados com comportamentos similares de saneamento e internação.
 4. **Análise Comparativa**: Estudo detalhado de discrepâncias regionais e *outliers*.
 
+## 🖥️ Visualização da Interface (Streamlit)
+
+O dashboard foi desenvolvido para proporcionar uma experiência interativa, permitindo que o usuário navegue entre os dados brutos e as análises estatísticas avançadas.
+
+| **Página Inicial** |
+
+<img src="img/1.jpg" alt="foto 1" width="100%">
+ 
+| **Identificação de estados atípicos (Boxplot)** |
+
+<img src="img/2.jpg" alt="foto 2" width="100%">
+
+| **Indíce de Sanemanto Positivo (ISP) vs Nº Internações (Com outliers)** 
+
+<img src="img/3.jpg" alt="foto 3" width="100%">
+
+| **Indíce de Sanemanto Positivo (ISP) vs Nº Internações (Sem outliers)** |
+
+<img src="img/4.jpg" alt="foto 4" width="100%">
+
+| **Análise e conclusão** |
+
+<img src="img/5.jpg" alt="Página Inicial do Dashboard" width="100%">
+
+---
+
 ## 📈 Conclusões da Análise
 A partir dos dados observados:
 * **Correlação Inversamente Proporcional**: Estados como **SP, RJ, DF, PE, RS e PR** apresentaram um Índice de Saneamento Positivo (ISP) correlacionado a um número baixo de internações (menos de 2.000 casos totais).
@@ -30,7 +56,7 @@ A partir dos dados observados:
 ## 📂 Como Executar
 
 No Google Colab
-1. Acompanhe todo processo de 'data science' incluindo a junção dos dataframes e análises executando o notebook fornecido 'projeto_final.py'
+1. Acompanhe todo processo de 'data science' incluindo a junção dos dataframes e análises executando o notebook fornecido 'projeto_final'
 
 No CodeSpace (Streamlit)
 1. Clone o repositório.
