@@ -116,11 +116,11 @@ def process_graph(frame):
 if settings_form_submitted:
     
     if data_in_table_internacoes:
-        st.subheader("Tabela de Dados Internações", divider="gray")
+        st.subheader("Tabela Bruta de Dados Internações", divider="gray")
         st.write(df_internacoes)
     
     if data_in_table_tratamento:
-        st.subheader("Tabela de Dados Tratamento de Água", divider="gray")
+        st.subheader("Tabela Bruta de Dados Tratamento de Água", divider="gray")
         st.write(df_tratamento)
 
     if data_in_table_final:
@@ -137,8 +137,8 @@ if settings_form_submitted:
         st.code(buffer_captura.getvalue(), language='text')
     
     if data_described:
-        st.subheader("Resumo dos dados: dataframe final (Modelo)", divider="gray")
-        st.write(df_final.describe())
+        st.subheader("Estatísticas das principais variáveis do dataframe final", divider="gray")
+        st.write(df_final[["Vol_Tratamento_Total",	"Convencional",	"Nao_Convencional",	"Simples_Desinfeccao",	"Sem_Tratamento",	"Internacao_Feco_Oral",	"Internacao_Total"]].describe())
     
 #
 
