@@ -138,7 +138,7 @@ if settings_form_submitted:
     
     if data_described:
         st.subheader("Estatísticas das principais variáveis do dataframe final", divider="gray")
-        st.write(df_final[["Vol_Tratamento_Total",	"Convencional",	"Nao_Convencional",	"Simples_Desinfeccao",	"Sem_Tratamento",	"Internacao_Feco_Oral",	"Internacao_Total"]].describe())
+        st.write(df_final[["Vol_Tratamento_Total",	"Tratamento_Convencional",	"Tratamento_Nao_Convencional",	"Simples_Desinfeccao",	"Sem_Tratamento",	"Internacao_Feco_Oral",	"Internacao_Total"]].describe())
     
 #
 
