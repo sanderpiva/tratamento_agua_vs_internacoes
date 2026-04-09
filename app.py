@@ -61,8 +61,9 @@ with graph_expander:
 # === Página Principal ===
 st.header('Tratamento de Água vs Nº Internações Hospitalares', divider='blue')
 
-def process_graph(frame):
-        st.subheader("Indice Saneamento Positivo (ISP) vs. Nº Internações", divider="gray")
+def process_graph(frame, flag):
+        
+        st.subheader(f"Indice Saneamento Positivo (ISP) {flag} vs. Nº Internações", divider="gray")
 
         fig, ax = plt.subplots(figsize=(14, 9))
         sns.set_style("whitegrid")
@@ -178,10 +179,14 @@ if graphs_form_submitted:
     
     if grap_all_areas:
         
-        process_graph(df_final)
+        flag_with_outliers = "com outliers"
+
+        process_graph(df_final, flag_with_outliers)
     
     
     if grap_all_areas_less_outliers:
+
+        flag_less_outliers = "sem outliers"
 
         iso_forest = IsolationForest(contamination=0.11, random_state=42)
 
@@ -191,7 +196,7 @@ if graphs_form_submitted:
         df_padrao = df_final[df_final['Outlier_IF'] == 1]
         df_critico = df_final[df_final['Outlier_IF'] == -1]
         
-        process_graph(df_padrao)
+        process_graph(df_padrao, flag_less_outliers)
     #
 
     if conclusion:
@@ -235,7 +240,7 @@ if graphs_form_submitted:
             Estados como **SP, RJ, DF, PE, RS, PR, AL, GO, MT, ES, SE e TO** confirmam essa tese, mantendo um ISP positivo com menos de **2.000 internações totais**.
             """)
         else:
-            st.write("Por favor, consulte previamente todos os graficos!")
+            st.info("### 💡 Lembrete Importante\nA visualização de todos os gráficos é obrigatória para esta etapa.")
 #   
         
             
