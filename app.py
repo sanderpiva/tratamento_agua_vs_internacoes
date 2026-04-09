@@ -14,8 +14,8 @@ def fetch_and_clean_data():
     url_final = 'ibge_dados/df_final.xlsx'
     
     try:
-        d_frame_internacoes = pd.read_excel(url_internacoes)
-        d_frame_tratamento = pd.read_excel(url_tratamento)
+        d_frame_internacoes = pd.read_excel(url_internacoes, dtype=str)
+        d_frame_tratamento = pd.read_excel(url_tratamento, dtype=str)
         d_frame_final = pd.read_excel(url_final)   
         
         return d_frame_internacoes, d_frame_tratamento, d_frame_final
