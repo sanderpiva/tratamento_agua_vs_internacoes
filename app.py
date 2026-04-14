@@ -26,13 +26,11 @@ def fetch_and_clean_data():
 
 df_internacoes, df_tratamento, df_final = fetch_and_clean_data()
 
-#
-# --- BARRA LATERAL ---
 st.sidebar.header('Configurações', divider='blue')
 
 data_expander = st.sidebar.expander(label="# **Dados Tabulares**", icon=":material/table:")
 with data_expander:
-    # O form é crucial para agrupar as ações de filtro e só atualizar a tela quando o botão for pressionado
+
     with st.form("settings_form", clear_on_submit=False):
         st.markdown("**Selecione as Visualizações**")
         data_in_table_internacoes = st.checkbox("Exibir Tabela de Dados Internações", key="table_internacoes")
@@ -41,15 +39,12 @@ with data_expander:
         data_info = st.checkbox("Informações dataframe final", key="info")
         data_described = st.checkbox("Resumir dados dataframe final (Describe)", key="describe")
         
-        # O botão de submissão é necessário para que as checagens acima sejam processadas
         settings_form_submitted = st.form_submit_button("Carregar")
-
-#
 
 graph_expander = st.sidebar.expander("# **Gráficos**", icon=":material/monitoring:")
 
 with graph_expander:
-    # Formulário dos gráficos
+
     with st.form("graphs_form", clear_on_submit=False):
         
         grap_outliers = st.checkbox("Identificando outliers")
@@ -58,7 +53,6 @@ with graph_expander:
         conclusion = st.checkbox("Conclusão")
         graphs_form_submitted = st.form_submit_button("Gerar")
 
-# === Página Principal ===
 st.header('Tratamento de Água vs Nº Internações Hospitalares', divider='blue')
 
 def process_graph(frame, flag):
@@ -112,8 +106,6 @@ def process_graph(frame, flag):
 
         st.table(resumo)
 
-
-# Ao submeter o form de dados tabulares
 if settings_form_submitted:
     
     if data_in_table_internacoes:
@@ -141,10 +133,6 @@ if settings_form_submitted:
         st.subheader("Estatísticas das principais variáveis do dataframe final", divider="gray")
         st.write(df_final[["Vol_Tratamento_Total",	"Tratamento_Convencional",	"Tratamento_Nao_Convencional",	"Simples_Desinfeccao",	"Sem_Tratamento",	"Internacao_Feco_Oral",	"Internacao_Total"]].describe())
     
-#
-
-# Ao submeter o form de gráficos
-
 if graphs_form_submitted:
     
     
@@ -190,28 +178,24 @@ if graphs_form_submitted:
 
         iso_forest = IsolationForest(contamination=0.11, random_state=42)
 
-        # Treinando o modelo
         df_final['Outlier_IF'] = iso_forest.fit_predict(df_final[['ISP', 'Internacao_Total']])
 
         df_padrao = df_final[df_final['Outlier_IF'] == 1]
         df_critico = df_final[df_final['Outlier_IF'] == -1]
         
         process_graph(df_padrao, flag_less_outliers)
-    #
-
+    
     if conclusion:
 
         if grap_outliers and grap_all_areas and grap_all_areas_less_outliers:
-            # Título da seção de análise
+    
             st.subheader("Análise e Conclusões dos Dados", divider="blue")
 
-            # Texto introdutório com destaque
             st.info("""
             **Observação Geral:** Mesmo retirando os outliers, nota-se que o comportamento geral se manteve. 
             Todavia, a grande maioria dos casos em que o **ISP foi positivo**, o risco de internação foi **baixo**, salvo exceções.
             """)
 
-            # Destaque para os casos específicos usando colunas
             st.write("### Casos de Estudo: AM e CE")
             col1, col2 = st.columns(2)
 
@@ -229,7 +213,6 @@ if graphs_form_submitted:
                 * **Análise:** Apresenta um número de internações alto, apesar do saldo de tratamento positivo.
                 """)
 
-            # Conclusão final em um bloco de destaque
             st.markdown("---")
             st.markdown("""
             ### **Conclusão Final**
@@ -241,7 +224,7 @@ if graphs_form_submitted:
             """)
         else:
             st.info("### 💡 Lembrete Importante\nA visualização de todos os gráficos é obrigatória para esta etapa.")
-#   
+   
         
             
 
